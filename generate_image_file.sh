@@ -1,9 +1,24 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+
+# determine the version
+if [[ -v MIYOO_VERSION ]]; then
+    # if a version env prop is set, just use that
+    VERSION=$MIYOO_VERSION;
+else
+    # otherwise, version is the git hash (short), 
+    # prefixed by the branch name for convenience
+    VERSION="$(git rev-parse --abbrev-ref HEAD)-$(git rev-parse --short HEAD)"
+    # and, if there are uncommitted changes, append a timestamp
+    if [[ ! -z $(git status -s) ]]; then
+        VERSION="${VERSION}-$(date +%s)"
+    fi
+fi
+
 ROOTDIR="."
 UBOOTBIN="${ROOTDIR}/boot/misc/u-boot-bins/u-boot-v90_q90_pocketgo.bin"
-OUTFILE="${ROOTDIR}/cfw-dev-$(date '+%Y%m%d').img"
+OUTFILE="${ROOTDIR}/cfw-${VERSION}.img"
 
 ## helpers
 BOLDRED='\e[1;31m'
@@ -81,6 +96,8 @@ $BB umount "${TEMPMOUNT}"
 msg "Copying over boot files ..."
 $BB mount "${LOOPDEV}p1" "${TEMPMOUNT}"
 $BB cp -Lr "${BOOTFILES}"/* "${TEMPMOUNT}"
+msg "Writing $VERSION to /boot/version.txt..."
+echo "$VERSION" > "${TEMPMOUNT}/version.txt"
 $BB umount "${TEMPMOUNT}"
 msg "Copying over main files ..."
 $BB mount "${LOOPDEV}p4" "${TEMPMOUNT}"
