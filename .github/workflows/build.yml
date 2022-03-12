@@ -17,5 +17,5 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         name: MiyooCFW microSD image
-        path: cfw-dev-*.img
+        path: cfw-*.img
         if-no-files-found: error # 'error', 'warn', 'ignore'; defaults to `warn`
